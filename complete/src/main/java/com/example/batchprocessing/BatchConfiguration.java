@@ -17,17 +17,20 @@ import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import java.net.MalformedURLException;
 
 @Configuration
 public class BatchConfiguration {
 
 	// tag::readerwriterprocessor[]
 	@Bean
-	public FlatFileItemReader<Person> reader() {
+	public FlatFileItemReader<Person> reader() throws MalformedURLException {
 		return new FlatFileItemReaderBuilder<Person>()
 			.name("personItemReader")
-			.resource(new ClassPathResource("sample-data.csv"))
+			.resource(new UrlResource("http://localhost:8815/files/names.csv"))
 			.delimited()
 			.names(new String[]{"firstName", "lastName"})
 			.fieldSetMapper(new BeanWrapperFieldSetMapper<Person>() {{
@@ -65,7 +68,7 @@ public class BatchConfiguration {
 
 	@Bean
 	public Step step1(JobRepository jobRepository,
-			PlatformTransactionManager transactionManager, JdbcBatchItemWriter<Person> writer) {
+			PlatformTransactionManager transactionManager, JdbcBatchItemWriter<Person> writer) throws MalformedURLException {
 		return new StepBuilder("step1", jobRepository)
 			.<Person, Person> chunk(10, transactionManager)
 			.reader(reader())
